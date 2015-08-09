@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.rksm/cloxp-repl "0.1.8-SNAPSHOT"]
                  [org.rksm/cloxp-com "0.1.9-SNAPSHOT"]
+                 [org.rksm/cloxp-projects "0.1.10-SNAPSHOT"]
                  [org.clojure/clojurescript "0.0-3308"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
   :profiles {:dev {:dependencies [[com.cemerick/clojurescript.test "0.3.3"]]}}
@@ -17,5 +18,5 @@
                               [:url "http://robert.kra.hn"]
                               [:email "robert.krahn@gmail.com"]
                               [:timezone "-9"]]]
+  :plugins [[lein-cljsbuild "1.0.6"]]
   :cljsbuild {:builds {:default {:source-paths ["cljs-test" "cljs-src"]}}})
-
