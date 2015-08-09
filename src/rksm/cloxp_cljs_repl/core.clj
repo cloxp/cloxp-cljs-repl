@@ -88,6 +88,20 @@
                              :out ""
                              :value nil}))))))
 
+(defn- eval-read-obj
+  "returns a map of :parsed :value :out and :error."
+  [cloxp-repl-env
+   {:keys [form] :as parsed}
+   & [{:keys [ns-sym line-offset throw-errors?]
+       :or {line-offset 0, throw-errors? false}
+       :as opts}]]
+  (let [add-to-meta {} ;(select-keys parsed [:line :column :source])
+        {:keys [error] :as result} (eval-cljs form cloxp-repl-env
+                                              (update-in opts [:add-meta] merge add-to-meta))]
+    (if (and error throw-errors?)
+      (throw error)
+      (assoc result :parsed parsed))))
+
 (defn eval-cljs-string
   ([expr opts]
    (eval-cljs-string expr nil opts))
@@ -98,21 +112,6 @@
                            :column-offset (or column-offset cloxp-repl/*column-offset*)})
      (map #(eval-read-obj cloxp-repl-env % (merge opts {:file file})))
      doall)))
-
-(defn- eval-read-obj
-  "returns a map of :parsed :value :out and :error."
-  [cloxp-repl-env
-   {:keys [form] :as parsed}
-   & [{:keys [ns-sym line-offset throw-errors?]
-       :or {line-offset 0, throw-errors? false}
-       :as opts}]]
-  (let [add-to-meta {} ;(select-keys parsed [:line :column :source])
-        ; (eval-cljs (read-cljs-string expr ns-sym opts) cloxp-repl-env opts)
-        {:keys [error] :as result} (eval-cljs form cloxp-repl-env
-                                              (update-in opts [:add-meta] merge add-to-meta))]
-    (if (and error throw-errors?)
-      (throw error)
-      (assoc result :parsed parsed))))
 
 (defn load-namespace
   ([sym opts]

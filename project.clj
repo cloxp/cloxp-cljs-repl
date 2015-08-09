@@ -4,6 +4,7 @@
   :license {:name "MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.7.0"]
+                 [org.rksm/cloxp-cljs "0.1.10-SNAPSHOT"]
                  [org.rksm/cloxp-repl "0.1.8-SNAPSHOT"]
                  [org.rksm/cloxp-com "0.1.9-SNAPSHOT"]
                  [org.rksm/cloxp-projects "0.1.10-SNAPSHOT"]
