@@ -7,6 +7,7 @@
             [clojure.tools.reader :as reader]
             [clojure.tools.reader.reader-types :as readers]
             [rksm.cloxp-repl :as cloxp-repl]
+            [rksm.cloxp-repl.exception :as ex]
             [rksm.cloxp-cljs.analyzer :as cloxp-ana]
             [rksm.cloxp-com.server :as server]
             [rksm.cloxp-com.messenger :as msg]
@@ -115,7 +116,12 @@
        :as opts}]]
   (let [add-to-meta {} ;(select-keys parsed [:line :column :source])
         {:keys [error] :as result} (eval-cljs form cloxp-repl-env
-                                              (update-in opts [:add-meta] merge add-to-meta))]
+                                              (update-in opts [:add-meta] merge add-to-meta))
+        error (when error (cond
+                            (and (instance? clojure.lang.ExceptionInfo error)
+                                 (-> error .getData :type (= :js-eval-exception)))
+                            (ex-info (-> error ex/process-error :printed) (ex-data error))
+                            :default error))]
     (if (and error throw-errors?)
       (throw error)
       (assoc result :parsed parsed))))
