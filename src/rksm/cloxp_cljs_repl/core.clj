@@ -72,40 +72,27 @@
                          :or {ns-sym ana/*cljs-ns*}
                          :as opts}]
 
-   ; for the cljs compiler we need to analyze the code. If the code isn't in a
-   ; file already, put it in a temp file for ensure-ns-analyzed!
-   (let [ana-file (if (or (= file "NO_SOURCE_FILE")
-                          (= file "<doit>")
-                          (= file "<cloxp-cljs-repl>")
-                          (empty? file))
-                    (let [tmp-file (fs/temp-file "cljs-doit-" ".cljs")]
-                      (spit tmp-file (str "(ns " ns-sym ")\n" (pr-str form)))
-                      (str tmp-file))
-                    file)]
-   
-     ; make sure we have a repl-env, compiler-env, ana-env...
+   ; make sure we have a repl-env, compiler-env, ana-env...
+   (cloxp-ana/with-compiler
      (let [opts (or opts {})
            cloxp-repl-env (cond
                             cloxp-repl-env cloxp-repl-env
                             target-id (repl-env-for-client target-id)
                             :default (default-repl-env))
-           c-env (cloxp-ana/comp-env)
-           ana-env (assoc (ana/empty-env)
-                          :ns (cloxp-ana/ensure-ns-analyzed! ns-sym ana-file))]
+           ana-env (assoc (cloxp-ana/ana-env) :ns (ana.api/find-ns ns-sym))]
 
        ; this is where the unicorns go to town
-       (env/with-compiler-env c-env
-         (try
-           {:error nil
-            :out ""
-            :value (binding [cljs.analyzer/*cljs-ns* ns-sym]
-                     (repl/evaluate-form cloxp-repl-env
-                                         ana-env
-                                         (or file "<cloxp-cljs-repl>")
-                                         form
-                                         identity ; wrap-fn
-                                         opts))}
-           (catch Exception e {:error e :out "" :value nil})))))))
+       (try
+         {:error nil
+          :out ""
+          :value (binding [cljs.analyzer/*cljs-ns* ns-sym]
+                   (repl/evaluate-form cloxp-repl-env
+                                       ana-env
+                                       (or file "<cloxp-cljs-repl>")
+                                       form
+                                       identity ; wrap-fn
+                                       opts))}
+         (catch Exception e {:error e :out "" :value nil}))))))
 
 (defn- eval-read-obj
   "returns a map of :parsed :value :out and :error."
